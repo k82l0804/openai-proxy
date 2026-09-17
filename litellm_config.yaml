@@ -1,0 +1,36 @@
+# LiteLLM Proxy Configuration
+#
+# Exposes Google Gemini models under OpenAI-compatible model names.
+# The Fox CLI and ACP client use standard OpenAI SDK calls against
+# http://localhost:8000 — they have no knowledge of Google APIs.
+#
+# Model mapping:
+#   gpt-4o-mini  →  gemini/gemini-3.6-flash      (fast / cheap)
+#   gpt-4o       →  gemini/gemini-3.1-pro-preview (smart / capable)
+
+model_list:
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: gemini/gemini-3.6-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gpt-4o
+    litellm_params:
+      model: gemini/gemini-3.1-pro-preview
+      api_key: os.environ/GEMINI_API_KEY
+
+general_settings:
+  # Set a master key to secure the proxy (clients pass this as the Bearer token).
+  # Leave as "local-dev" for local development — change for shared/staging use.
+  master_key: "local-dev"
+
+  # Drop unknown OpenAI parameters that Gemini doesn't support, instead of erroring.
+  drop_params: true
+
+litellm_settings:
+  # Log level: DEBUG | INFO | WARNING | ERROR
+  log_level: INFO
+
+  # Suppress noisy success logs; errors will still surface.
+  success_callback: []
+  failure_callback: []
