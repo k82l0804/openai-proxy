@@ -1,12 +1,15 @@
 # LiteLLM Proxy Configuration
 #
-# Exposes Google Gemini models under OpenAI-compatible model names.
+# Exposes models under OpenAI-compatible model names.
 # The Fox CLI and ACP client use standard OpenAI SDK calls against
-# http://localhost:8000 — they have no knowledge of Google APIs.
+# http://localhost:8000 — they have no knowledge of Google / OpenRouter APIs.
 #
 # Model mapping:
-#   gpt-4o-mini  →  gemini/gemini-3.6-flash      (fast / cheap)
-#   gpt-4o       →  gemini/gemini-3.1-pro-preview (smart / capable)
+#   gpt-4o-mini  →  gemini/gemini-3.6-flash          (fast / cheap)
+#   gpt-4o       →  gemini/gemini-3.1-pro-preview     (smart / capable)
+#   nemotron     →  openrouter/nvidia/nemotron-3-ultra-550b-a55b
+#   gemma        →  openrouter/google/gemma-4-31b-it
+#   gpt-oss      →  openrouter/openai/gpt-oss-120b
 
 model_list:
   - model_name: gpt-4o-mini
@@ -19,12 +22,42 @@ model_list:
       model: gemini/gemini-3.1-pro-preview
       api_key: os.environ/GEMINI_API_KEY
 
+  - model_name: nemotron
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-ultra-550b-a55b
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+
+  - model_name: gemma
+    litellm_params:
+      model: openrouter/google/gemma-4-31b-it
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+
+  - model_name: gpt-oss
+    litellm_params:
+      model: openrouter/openai/gpt-oss-120b
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+
+  - model_name: codestral
+    litellm_params:
+      model: openrouter/mistralai/codestral-2508
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+
+  - model_name: llama-3.1
+    litellm_params:
+      model: openrouter/meta-llama/llama-3.1-8b-instruct
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+
+  - model_name: llama-3.3
+    litellm_params:
+      model: openrouter/meta-llama/llama-3.3-70b-instruct
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+
 general_settings:
   # Set a master key to secure the proxy (clients pass this as the Bearer token).
   # Leave as "local-dev" for local development — change for shared/staging use.
   master_key: "local-dev"
 
-  # Drop unknown OpenAI parameters that Gemini doesn't support, instead of erroring.
+  # Drop unknown OpenAI parameters that upstream providers don't support, instead of erroring.
   drop_params: true
 
 litellm_settings:

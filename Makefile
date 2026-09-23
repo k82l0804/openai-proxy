@@ -45,9 +45,39 @@ test:
 		-d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Say hi in one sentence."}],"max_tokens":64}' \
 		$(PROXY_URL)/v1/chat/completions); \
 	echo "$$RESP" | python3 -m json.tool || echo "$$RESP"
-	@echo "--- Testing gpt-4o (-> Gemini 2.5 Pro) ---"
+	@echo "--- Testing nemotron (-> Nemotron 3 Ultra) ---"
 	@RESP=$$(curl -s -H "Content-Type: application/json" \
 		-H "Authorization: Bearer $(MASTER_KEY)" \
-		-d '{"model":"gpt-4o","messages":[{"role":"user","content":"Say hi in one sentence."}],"max_tokens":64}' \
+		-d '{"model":"nemotron","messages":[{"role":"user","content":"Say hi in one sentence."}],"max_tokens":64}' \
+		$(PROXY_URL)/v1/chat/completions); \
+	echo "$$RESP" | python3 -m json.tool || echo "$$RESP"
+	@echo "--- Testing gemma (-> Gemma 4 31B) ---"
+	@RESP=$$(curl -s -H "Content-Type: application/json" \
+		-H "Authorization: Bearer $(MASTER_KEY)" \
+		-d '{"model":"gemma","messages":[{"role":"user","content":"Say hi in one sentence."}],"max_tokens":64}' \
+		$(PROXY_URL)/v1/chat/completions); \
+	echo "$$RESP" | python3 -m json.tool || echo "$$RESP"
+	@echo "--- Testing gpt-oss (-> GPT-OSS 120B) ---"
+	@RESP=$$(curl -s -H "Content-Type: application/json" \
+		-H "Authorization: Bearer $(MASTER_KEY)" \
+		-d '{"model":"gpt-oss","messages":[{"role":"user","content":"Say hi in one sentence."}],"max_tokens":64}' \
+		$(PROXY_URL)/v1/chat/completions); \
+	echo "$$RESP" | python3 -m json.tool || echo "$$RESP"
+	@echo "--- Testing codestral (-> Codestral 2508) ---"
+	@RESP=$$(curl -s -H "Content-Type: application/json" \
+		-H "Authorization: Bearer $(MASTER_KEY)" \
+		-d '{"model":"codestral","messages":[{"role":"user","content":"Say hi in one sentence."}],"max_tokens":64}' \
+		$(PROXY_URL)/v1/chat/completions); \
+	echo "$$RESP" | python3 -m json.tool || echo "$$RESP"
+	@echo "--- Testing llama-3.1 (-> Llama 3.1 8B Instruct) ---"
+	@RESP=$$(curl -s -H "Content-Type: application/json" \
+		-H "Authorization: Bearer $(MASTER_KEY)" \
+		-d '{"model":"llama-3.1","messages":[{"role":"user","content":"Say hi in one sentence."}],"max_tokens":64}' \
+		$(PROXY_URL)/v1/chat/completions); \
+	echo "$$RESP" | python3 -m json.tool || echo "$$RESP"
+	@echo "--- Testing llama-3.3 (-> Llama 3.3 70B Instruct) ---"
+	@RESP=$$(curl -s -H "Content-Type: application/json" \
+		-H "Authorization: Bearer $(MASTER_KEY)" \
+		-d '{"model":"llama-3.3","messages":[{"role":"user","content":"Say hi in one sentence."}],"max_tokens":64}' \
 		$(PROXY_URL)/v1/chat/completions); \
 	echo "$$RESP" | python3 -m json.tool || echo "$$RESP"
