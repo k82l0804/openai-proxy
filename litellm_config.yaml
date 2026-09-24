@@ -12,24 +12,24 @@
 #   gpt-oss      →  openrouter/openai/gpt-oss-120b
 
 model_list:
-  - model_name: gpt-4o-mini
+  - model_name: gemini-3.6-flash
     litellm_params:
       model: gemini/gemini-3.6-flash
       api_key: os.environ/GEMINI_API_KEY
 
-  - model_name: gpt-4o
+  - model_name: gemini-3.1-pro-preview
     litellm_params:
       model: gemini/gemini-3.1-pro-preview
       api_key: os.environ/GEMINI_API_KEY
 
-  - model_name: nemotron
+  - model_name: nemotron-3-ultra
     litellm_params:
       model: openrouter/nvidia/nemotron-3-ultra-550b-a55b
       api_key: os.environ/OPEN_ROUTER_API_KEY
 
-  - model_name: gemma
+  - model_name: gemma-4
     litellm_params:
-      model: openrouter/google/gemma-4-31b-it
+      model: openrouter/google/gemma-4-31b-it:free
       api_key: os.environ/OPEN_ROUTER_API_KEY
 
   - model_name: gpt-oss
@@ -50,6 +50,11 @@ model_list:
   - model_name: llama-3.3
     litellm_params:
       model: openrouter/meta-llama/llama-3.3-70b-instruct
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+
+  - model_name: jev
+    litellm_params:
+      model: openrouter/~typesafe/jev-latest
       api_key: os.environ/OPEN_ROUTER_API_KEY
 
 general_settings:
