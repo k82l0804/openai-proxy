@@ -4,106 +4,210 @@
 # The Fox CLI and ACP client use standard OpenAI SDK calls against
 # http://localhost:8000 — they have no knowledge of Google / OpenRouter APIs.
 #
+# Capability Tiers (S > A > B > C > D):
+#   S — Frontier (70B+): unlimited agentic steps, full tool-call editing
+#   A — Fast reasoning (30-40B): unlimited steps, full tool-call editing
+#   B — Benchmark (13-20B): 5 steps, tool-call editing
+#   C — Summarization (7-10B): 3 steps, fence-parse editing
+#   D — Basic chat (<7B): 1 step, whole-file rewrite
+#
+# Higher tiers can substitute for lower tiers (S can do C's job, not vice versa).
+#
+# model_info fields (declared capabilities, validated against tier spec):
+#   tier              — Capability tier (S/A/B/C/D)
+#   params_b          — Total parameter count in billions (omit if unknown)
+#   params_estimated  — true if params_b is an unofficial estimate
+#   context_k         — Context window in thousands of tokens
+#   max_output_k      — Max output tokens per turn in thousands
+#   supports_tools    — Supports OpenAI-style function/tool calling
+#   supports_json_mode — Supports structured JSON output (response_format)
+#
+# Canonical spec: docs/specs/2026-09-26T13-53_tier-capability-spec.yaml
+#   Spec defines tier requirements → model_info declares compliance → tier-sync validates
+#
 # Model mapping:
-#   gpt-4o-mini           →  openrouter/openai/gpt-4o-mini             (Tier A: Frontier mini)
-#   gpt-4o                →  openrouter/google/gemini-3.1-pro-preview  (Tier S: Frontier)
-#   gemini-3.6-flash      →  gemini/gemini-3.6-flash                   (Tier S: Frontier)
-#   nemotron-3-ultra      →  openrouter/nvidia/nemotron-3-ultra-550b-a55b (Tier S: 70B+)
-#   gemma-4               →  openrouter/google/gemma-4-31b-it:free     (Tier A: 31B)
-#   gpt-oss               →  openrouter/openai/gpt-oss-120b            (Tier S: 120B)
-#   codestral             →  openrouter/mistralai/codestral-2508       (Tier A: 32B)
-#   llama-3.2-3b          →  openrouter/meta-llama/llama-3.2-3b-instruct (Tier D: 3B)
-#   llama-3.1-8b          →  openrouter/meta-llama/llama-3.1-8b-instruct (Tier C: 8B)
-#   qwen-2.5-7b-instruct  →  openrouter/qwen/qwen-2.5-7b-instruct       (Tier C: 7B)
-#   llama-3.3             →  openrouter/meta-llama/llama-3.3-70b-instruct (Tier S: 70B)
-#   jev                   →  openrouter/~typesafe/jev-latest           (Tier B: Benchmark)
-#   grok-4.7              →  xai/grok-4.7                              (Tier S: Frontier)
-#   deepseek-v4-flash     →  openrouter/deepseek/deepseek-v4-flash-0731  (Tier A: Fast reasoning)
+#   gpt-4o-mini           →  openrouter/openai/gpt-4o-mini               (Tier A)
+#   gpt-4o                →  openrouter/google/gemini-3.1-pro-preview     (Tier S)
+#   gemini-3.6-flash      →  gemini/gemini-3.6-flash                      (Tier S)
+#   nemotron-3-ultra      →  openrouter/nvidia/nemotron-3-ultra-550b-a55b (Tier S)
+#   gemma-4               →  openrouter/google/gemma-4-31b-it:free        (Tier A)
+#   gpt-oss               →  openrouter/openai/gpt-oss-120b               (Tier S)
+#   codestral             →  openrouter/mistralai/codestral-2508           (Tier A)
+#   llama-3.2-3b          →  openrouter/meta-llama/llama-3.2-3b-instruct  (Tier D)
+#   llama-3.1-8b          →  openrouter/meta-llama/llama-3.1-8b-instruct  (Tier C)
+#   qwen-2.5-7b-instruct  →  openrouter/qwen/qwen-2.5-7b-instruct        (Tier C)
+#   llama-3.3             →  openrouter/meta-llama/llama-3.3-70b-instruct (Tier S)
+#   jev                   →  openrouter/~typesafe/jev-latest               (Tier B)
+#   grok-4.7              →  xai/grok-4.7                                  (Tier S)
+#   deepseek-v4-flash     →  openrouter/deepseek/deepseek-v4-flash-0731   (Tier A)
 
 model_list:
-  # Tier A: Frontier mini
   - model_name: gpt-4o-mini
     litellm_params:
       model: openrouter/openai/gpt-4o-mini
       api_key: os.environ/OPEN_ROUTER_API_KEY
+    model_info:
+      tier: A
+      params_b: 8
+      params_estimated: true
+      context_k: 128
+      max_output_k: 16
+      supports_tools: true
+      supports_json_mode: true
 
-  # Tier S: Frontier
   - model_name: gpt-4o
     litellm_params:
       model: openrouter/google/gemini-3.1-pro-preview
       api_key: os.environ/OPEN_ROUTER_API_KEY
+    model_info:
+      tier: S
+      context_k: 1000
+      max_output_k: 65
+      supports_tools: true
+      supports_json_mode: true
 
-  # Tier S: Frontier
   - model_name: gemini-3.6-flash
     litellm_params:
       model: gemini/gemini-3.6-flash
       api_key: os.environ/GEMINI_API_KEY
+    model_info:
+      tier: S
+      context_k: 1000
+      max_output_k: 65
+      supports_tools: true
+      supports_json_mode: true
 
-  # Tier S: 70B+
   - model_name: nemotron-3-ultra
     litellm_params:
       model: openrouter/nvidia/nemotron-3-ultra-550b-a55b
       api_key: os.environ/OPEN_ROUTER_API_KEY
+    model_info:
+      tier: S
+      params_b: 550
+      context_k: 256
+      max_output_k: 65
+      supports_tools: true
+      supports_json_mode: true
 
-  # Tier A: 31B
   - model_name: gemma-4
     litellm_params:
       model: openrouter/google/gemma-4-31b-it:free
       api_key: os.environ/OPEN_ROUTER_API_KEY
+    model_info:
+      tier: A
+      params_b: 31
+      context_k: 128
+      max_output_k: 16
+      supports_tools: true
+      supports_json_mode: true
 
-  # Tier S: 120B
   - model_name: gpt-oss
     litellm_params:
       model: openrouter/openai/gpt-oss-120b
       api_key: os.environ/OPEN_ROUTER_API_KEY
+    model_info:
+      tier: S
+      params_b: 120
+      context_k: 131
+      max_output_k: 131
+      supports_tools: true
+      supports_json_mode: true
 
-  # Tier A: 32B
   - model_name: codestral
     litellm_params:
       model: openrouter/mistralai/codestral-2508
       api_key: os.environ/OPEN_ROUTER_API_KEY
+    model_info:
+      tier: A
+      params_b: 22
+      context_k: 256
+      max_output_k: 256
+      supports_tools: true
+      supports_json_mode: true
 
-  # Tier D: 3B
   - model_name: llama-3.2-3b
     litellm_params:
       model: openrouter/meta-llama/llama-3.2-3b-instruct
       api_key: os.environ/OPEN_ROUTER_API_KEY
+    model_info:
+      tier: D
+      params_b: 3
+      context_k: 128
+      max_output_k: 131
+      supports_tools: false
+      supports_json_mode: false
 
-  # Tier C: 8B
   - model_name: llama-3.1-8b
     litellm_params:
       model: openrouter/meta-llama/llama-3.1-8b-instruct
       api_key: os.environ/OPEN_ROUTER_API_KEY
+    model_info:
+      tier: C
+      params_b: 8
+      context_k: 128
+      max_output_k: 117
+      supports_tools: false
+      supports_json_mode: false
 
-  # Tier C: 7B
   - model_name: qwen-2.5-7b-instruct
     litellm_params:
       model: openrouter/qwen/qwen-2.5-7b-instruct
       api_key: os.environ/OPEN_ROUTER_API_KEY
+    model_info:
+      tier: C
+      params_b: 7
+      context_k: 128
+      max_output_k: 32
+      supports_tools: false
+      supports_json_mode: false
 
-  # Tier S: 70B
   - model_name: llama-3.3
     litellm_params:
       model: openrouter/meta-llama/llama-3.3-70b-instruct
       api_key: os.environ/OPEN_ROUTER_API_KEY
+    model_info:
+      tier: S
+      params_b: 70
+      context_k: 128
+      max_output_k: 16
+      supports_tools: true
+      supports_json_mode: true
 
-  # Tier B: Benchmark
   - model_name: jev
     litellm_params:
       model: openrouter/~typesafe/jev-latest
       api_key: os.environ/OPEN_ROUTER_API_KEY
+    model_info:
+      tier: B
+      context_k: 32
+      max_output_k: 32
+      supports_tools: true
+      supports_json_mode: false
 
-  # Tier S: Frontier
   - model_name: grok-4.7
     litellm_params:
       model: xai/grok-4.7
       api_key: os.environ/GROK_API_KEY
+    model_info:
+      tier: S
+      params_b: 2100
+      params_estimated: true
+      context_k: 500
+      max_output_k: 131
+      supports_tools: true
+      supports_json_mode: true
 
-  # Tier A: Fast reasoning
   - model_name: deepseek-v4-flash
     litellm_params:
       model: openrouter/deepseek/deepseek-v4-flash-0731
       api_key: os.environ/OPEN_ROUTER_API_KEY
+    model_info:
+      tier: A
+      params_b: 284
+      context_k: 1000
+      max_output_k: 1000
+      supports_tools: true
+      supports_json_mode: true
 
 general_settings:
   # Set a master key to secure the proxy (clients pass this as the Bearer token).
@@ -121,3 +225,4 @@ litellm_settings:
   # Suppress noisy success logs; errors will still surface.
   success_callback: []
   failure_callback: []
+
