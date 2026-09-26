@@ -5,56 +5,104 @@
 # http://localhost:8000 — they have no knowledge of Google / OpenRouter APIs.
 #
 # Model mapping:
-#   gpt-4o-mini  →  gemini/gemini-3.6-flash          (fast / cheap)
-#   gpt-4o       →  gemini/gemini-3.1-pro-preview     (smart / capable)
-#   nemotron     →  openrouter/nvidia/nemotron-3-ultra-550b-a55b
-#   gemma        →  openrouter/google/gemma-4-31b-it
-#   gpt-oss      →  openrouter/openai/gpt-oss-120b
+#   gpt-4o-mini           →  openrouter/openai/gpt-4o-mini             (Tier A: Frontier mini)
+#   gpt-4o                →  openrouter/google/gemini-3.1-pro-preview  (Tier S: Frontier)
+#   gemini-3.6-flash      →  gemini/gemini-3.6-flash                   (Tier S: Frontier)
+#   nemotron-3-ultra      →  openrouter/nvidia/nemotron-3-ultra-550b-a55b (Tier S: 70B+)
+#   gemma-4               →  openrouter/google/gemma-4-31b-it:free     (Tier A: 31B)
+#   gpt-oss               →  openrouter/openai/gpt-oss-120b            (Tier S: 120B)
+#   codestral             →  openrouter/mistralai/codestral-2508       (Tier A: 32B)
+#   llama-3.2-3b          →  openrouter/meta-llama/llama-3.2-3b-instruct (Tier D: 3B)
+#   llama-3.1-8b          →  openrouter/meta-llama/llama-3.1-8b-instruct (Tier C: 8B)
+#   qwen-2.5-7b-instruct  →  openrouter/qwen/qwen-2.5-7b-instruct       (Tier C: 7B)
+#   llama-3.3             →  openrouter/meta-llama/llama-3.3-70b-instruct (Tier S: 70B)
+#   jev                   →  openrouter/~typesafe/jev-latest           (Tier B: Benchmark)
+#   grok-4.7              →  xai/grok-4.7                              (Tier S: Frontier)
+#   deepseek-v4-flash     →  openrouter/deepseek/deepseek-v4-flash-0731  (Tier A: Fast reasoning)
 
 model_list:
+  # Tier A: Frontier mini
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: openrouter/openai/gpt-4o-mini
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+
+  # Tier S: Frontier
+  - model_name: gpt-4o
+    litellm_params:
+      model: openrouter/google/gemini-3.1-pro-preview
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+
+  # Tier S: Frontier
   - model_name: gemini-3.6-flash
     litellm_params:
       model: gemini/gemini-3.6-flash
       api_key: os.environ/GEMINI_API_KEY
 
-  - model_name: gemini-3.1-pro-preview
-    litellm_params:
-      model: gemini/gemini-3.1-pro-preview
-      api_key: os.environ/GEMINI_API_KEY
-
+  # Tier S: 70B+
   - model_name: nemotron-3-ultra
     litellm_params:
       model: openrouter/nvidia/nemotron-3-ultra-550b-a55b
       api_key: os.environ/OPEN_ROUTER_API_KEY
 
+  # Tier A: 31B
   - model_name: gemma-4
     litellm_params:
       model: openrouter/google/gemma-4-31b-it:free
       api_key: os.environ/OPEN_ROUTER_API_KEY
 
+  # Tier S: 120B
   - model_name: gpt-oss
     litellm_params:
       model: openrouter/openai/gpt-oss-120b
       api_key: os.environ/OPEN_ROUTER_API_KEY
 
+  # Tier A: 32B
   - model_name: codestral
     litellm_params:
       model: openrouter/mistralai/codestral-2508
       api_key: os.environ/OPEN_ROUTER_API_KEY
 
-  - model_name: llama-3.1
+  # Tier D: 3B
+  - model_name: llama-3.2-3b
+    litellm_params:
+      model: openrouter/meta-llama/llama-3.2-3b-instruct
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+
+  # Tier C: 8B
+  - model_name: llama-3.1-8b
     litellm_params:
       model: openrouter/meta-llama/llama-3.1-8b-instruct
       api_key: os.environ/OPEN_ROUTER_API_KEY
 
+  # Tier C: 7B
+  - model_name: qwen-2.5-7b-instruct
+    litellm_params:
+      model: openrouter/qwen/qwen-2.5-7b-instruct
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+
+  # Tier S: 70B
   - model_name: llama-3.3
     litellm_params:
       model: openrouter/meta-llama/llama-3.3-70b-instruct
       api_key: os.environ/OPEN_ROUTER_API_KEY
 
+  # Tier B: Benchmark
   - model_name: jev
     litellm_params:
       model: openrouter/~typesafe/jev-latest
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+
+  # Tier S: Frontier
+  - model_name: grok-4.7
+    litellm_params:
+      model: xai/grok-4.7
+      api_key: os.environ/GROK_API_KEY
+
+  # Tier A: Fast reasoning
+  - model_name: deepseek-v4-flash
+    litellm_params:
+      model: openrouter/deepseek/deepseek-v4-flash-0731
       api_key: os.environ/OPEN_ROUTER_API_KEY
 
 general_settings:
@@ -68,6 +116,7 @@ general_settings:
 litellm_settings:
   # Log level: DEBUG | INFO | WARNING | ERROR
   log_level: INFO
+  drop_params: true
 
   # Suppress noisy success logs; errors will still surface.
   success_callback: []
