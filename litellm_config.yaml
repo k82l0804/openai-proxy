@@ -26,7 +26,7 @@
 #   Spec defines tier requirements → model_info declares compliance → tier-sync validates
 #
 # Model mapping:
-#   gpt-4o-mini           →  openrouter/openai/gpt-4o-mini               (Tier A)
+#   gpt-4o-mini           →  openrouter/openai/gpt-4o-mini               (Tier B — override)
 #   gpt-4o                →  openrouter/google/gemini-3.1-pro-preview     (Tier S)
 #   gemini-3.6-flash      →  gemini/gemini-3.6-flash                      (Tier S)
 #   nemotron-3-ultra      →  openrouter/nvidia/nemotron-3-ultra-550b-a55b (Tier S)
@@ -37,7 +37,7 @@
 #   llama-3.1-8b          →  openrouter/meta-llama/llama-3.1-8b-instruct  (Tier C)
 #   qwen-2.5-7b-instruct  →  openrouter/qwen/qwen-2.5-7b-instruct        (Tier C)
 #   llama-3.3             →  openrouter/meta-llama/llama-3.3-70b-instruct (Tier S)
-#   jev                   →  openrouter/~typesafe/jev-latest               (Tier B)
+#   qwen-2.5-coder-32b    →  openrouter/qwen/qwen-2.5-coder-32b-instruct  (Tier B)
 #   grok-4.7              →  xai/grok-4.7                                  (Tier S)
 #   deepseek-v4-flash     →  openrouter/deepseek/deepseek-v4-flash-0731   (Tier A)
 
@@ -47,7 +47,8 @@ model_list:
       model: openrouter/openai/gpt-4o-mini
       api_key: os.environ/OPEN_ROUTER_API_KEY
     model_info:
-      tier: A
+      fox_tier: B
+      fox_tier_override_reason: "8B params (Tier C by size) promoted to Tier B — supports tools, JSON mode, 128K context"
       params_b: 8
       params_estimated: true
       context_k: 128
@@ -60,7 +61,7 @@ model_list:
       model: openrouter/google/gemini-3.1-pro-preview
       api_key: os.environ/OPEN_ROUTER_API_KEY
     model_info:
-      tier: S
+      fox_tier: S
       context_k: 1000
       max_output_k: 65
       supports_tools: true
@@ -71,7 +72,7 @@ model_list:
       model: gemini/gemini-3.6-flash
       api_key: os.environ/GEMINI_API_KEY
     model_info:
-      tier: S
+      fox_tier: S
       context_k: 1000
       max_output_k: 65
       supports_tools: true
@@ -82,7 +83,7 @@ model_list:
       model: openrouter/nvidia/nemotron-3-ultra-550b-a55b
       api_key: os.environ/OPEN_ROUTER_API_KEY
     model_info:
-      tier: S
+      fox_tier: S
       params_b: 550
       context_k: 256
       max_output_k: 65
@@ -94,7 +95,7 @@ model_list:
       model: openrouter/google/gemma-4-31b-it:free
       api_key: os.environ/OPEN_ROUTER_API_KEY
     model_info:
-      tier: A
+      fox_tier: A
       params_b: 31
       context_k: 128
       max_output_k: 16
@@ -106,7 +107,7 @@ model_list:
       model: openrouter/openai/gpt-oss-120b
       api_key: os.environ/OPEN_ROUTER_API_KEY
     model_info:
-      tier: S
+      fox_tier: S
       params_b: 120
       context_k: 131
       max_output_k: 131
@@ -118,7 +119,7 @@ model_list:
       model: openrouter/mistralai/codestral-2508
       api_key: os.environ/OPEN_ROUTER_API_KEY
     model_info:
-      tier: A
+      fox_tier: A
       params_b: 22
       context_k: 256
       max_output_k: 256
@@ -130,7 +131,7 @@ model_list:
       model: openrouter/meta-llama/llama-3.2-3b-instruct
       api_key: os.environ/OPEN_ROUTER_API_KEY
     model_info:
-      tier: D
+      fox_tier: D
       params_b: 3
       context_k: 128
       max_output_k: 131
@@ -142,7 +143,7 @@ model_list:
       model: openrouter/meta-llama/llama-3.1-8b-instruct
       api_key: os.environ/OPEN_ROUTER_API_KEY
     model_info:
-      tier: C
+      fox_tier: C
       params_b: 8
       context_k: 128
       max_output_k: 117
@@ -154,7 +155,7 @@ model_list:
       model: openrouter/qwen/qwen-2.5-7b-instruct
       api_key: os.environ/OPEN_ROUTER_API_KEY
     model_info:
-      tier: C
+      fox_tier: C
       params_b: 7
       context_k: 128
       max_output_k: 32
@@ -166,34 +167,52 @@ model_list:
       model: openrouter/meta-llama/llama-3.3-70b-instruct
       api_key: os.environ/OPEN_ROUTER_API_KEY
     model_info:
-      tier: S
+      fox_tier: S
       params_b: 70
       context_k: 128
       max_output_k: 16
       supports_tools: true
       supports_json_mode: true
 
-  - model_name: jev
+  # jev is a decisions model — cannot be used with chat/completions endpoint
+  # - model_name: jev
+  #   litellm_params:
+  #     model: openrouter/~typesafe/jev-latest
+
+  - model_name: qwen-2.5-coder-32b
     litellm_params:
-      model: openrouter/~typesafe/jev-latest
+      model: openrouter/qwen/qwen-2.5-coder-32b-instruct
       api_key: os.environ/OPEN_ROUTER_API_KEY
     model_info:
-      tier: B
-      context_k: 32
+      fox_tier: B
+      params_b: 32
+      context_k: 128
       max_output_k: 32
       supports_tools: true
-      supports_json_mode: false
+      supports_json_mode: true
 
   - model_name: grok-4.7
     litellm_params:
       model: xai/grok-4.7
       api_key: os.environ/GROK_API_KEY
     model_info:
-      tier: S
+      fox_tier: S
       params_b: 2100
       params_estimated: true
       context_k: 500
       max_output_k: 131
+      supports_tools: true
+      supports_json_mode: true
+
+  - model_name: claude-sonnet-5-5
+    litellm_params:
+      model: anthropic/claude-3-5-sonnet-latest
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      fox_tier: S
+      max_tokens: 8192
+      input_cost_per_token: 0.000003
+      output_cost_per_token: 0.000015
       supports_tools: true
       supports_json_mode: true
 
@@ -202,7 +221,7 @@ model_list:
       model: openrouter/deepseek/deepseek-v4-flash-0731
       api_key: os.environ/OPEN_ROUTER_API_KEY
     model_info:
-      tier: A
+      fox_tier: A
       params_b: 284
       context_k: 1000
       max_output_k: 1000
