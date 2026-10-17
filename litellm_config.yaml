@@ -345,6 +345,11 @@ model_list:
       supports_tools: true
       supports_json_mode: true
 
+  - model_name: jev-latest
+    litellm_params:
+      model: openrouter/~typesafe/jev-latest
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+
 general_settings:
   # Set a master key to secure the proxy (clients pass this as the Bearer token).
   # Leave as "local-dev" for local development — change for shared/staging use.
@@ -352,6 +357,15 @@ general_settings:
 
   # Drop unknown OpenAI parameters that upstream providers don't support, instead of erroring.
   drop_params: true
+
+  pass_through_endpoints:
+    - path: "/jev/decisions"
+      target: "https://openrouter.ai/api/alpha/decisions"
+      headers:
+        Authorization: "bearer os.environ/OPEN_ROUTER_API_KEY"
+        content-type: application/json
+      forward_headers: false
+
 
 litellm_settings:
   # Log level: DEBUG | INFO | WARNING | ERROR
