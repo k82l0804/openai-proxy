@@ -27,7 +27,9 @@
 #
 # Model mapping:
 #   gpt-4o-mini           →  openrouter/openai/gpt-4o-mini               (Tier B — override)
-#   gpt-4o                →  openrouter/google/gemini-3.1-pro-preview     (Tier S)
+#   gpt-4o                →  openrouter/google/gemini-3.1-pro-preview     (Tier S)  STAND-IN NAME: the Fox CLI and ACP client default to OpenAI names, so this
+#                                                                                 entry answers to `gpt-4o` but runs Gemini 3.1 Pro; use `gemini-3.1-pro` for an honest name
+#   gemini-3.1-pro        →  openrouter/google/gemini-3.1-pro-preview     (Tier S; same model as gpt-4o, accurate name; added 2026-10-17)
 #   gemini-3.6-flash      →  gemini/gemini-3.6-flash                      (Tier S)
 #   nemotron-3-ultra      →  openrouter/nvidia/nemotron-3-ultra-550b-a55b (Tier S)
 #   gemma-4               →  openrouter/google/gemma-4-31b-it:free        (Tier A)
@@ -38,8 +40,13 @@
 #   qwen-2.5-7b-instruct  →  openrouter/qwen/qwen-2.5-7b-instruct        (Tier C)
 #   llama-3.3             →  openrouter/meta-llama/llama-3.3-70b-instruct (Tier S)
 #   qwen-2.5-coder-32b    →  openrouter/qwen/qwen-2.5-coder-32b-instruct  (Tier B)
-#   grok-4.7              →  xai/grok-4.7                                  (Tier S)
+#   grok-4.7              →  xai/grok-4.7                                  (Tier S; the xAI API team had no credits on 2026-10-17: use or-grok-4.7 for the same model via OpenRouter)
+#   claude-sonnet-5-5     →  openrouter/anthropic/claude-sonnet-5.5        (Tier S; corrected 2026-10-17: it ran anthropic/claude-3-5-sonnet-latest and needed an Anthropic key)
 #   deepseek-v4-flash     →  openrouter/deepseek/deepseek-v4-flash-0731   (Tier A)
+#   or-grok-4.7           →  openrouter/x-ai/grok-4.7                      (Tier S; added 2026-10-17 for WT-0e: xAI direct has no credits)
+#   or-claude-sonnet-5.5  →  openrouter/anthropic/claude-sonnet-5.5        (Tier S; WT-0e)
+#   or-claude-opus-5.5    →  openrouter/anthropic/claude-opus-5.5          (Tier S; WT-0e)
+#   or-*-high / -xhigh    →  the same models with reasoning effort fixed through extra_body (WT-0e)
 
 model_list:
   - model_name: gpt-4o-mini
@@ -57,6 +64,18 @@ model_list:
       supports_json_mode: true
 
   - model_name: gpt-4o
+    litellm_params:
+      # stand-in name (see the header): this runs Gemini 3.1 Pro, not an OpenAI model
+      model: openrouter/google/gemini-3.1-pro-preview
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+    model_info:
+      fox_tier: S
+      context_k: 1000
+      max_output_k: 65
+      supports_tools: true
+      supports_json_mode: true
+
+  - model_name: gemini-3.1-pro
     litellm_params:
       model: openrouter/google/gemini-3.1-pro-preview
       api_key: os.environ/OPEN_ROUTER_API_KEY
@@ -206,13 +225,15 @@ model_list:
 
   - model_name: claude-sonnet-5-5
     litellm_params:
-      model: anthropic/claude-3-5-sonnet-latest
-      api_key: os.environ/ANTHROPIC_API_KEY
+      # corrected 2026-10-17: was anthropic/claude-3-5-sonnet-latest with ANTHROPIC_API_KEY (an older model than the name says)
+      model: openrouter/anthropic/claude-sonnet-5.5
+      api_key: os.environ/OPEN_ROUTER_API_KEY
     model_info:
       fox_tier: S
-      max_tokens: 8192
-      input_cost_per_token: 0.000003
-      output_cost_per_token: 0.000015
+      context_k: 1000
+      max_output_k: 64
+      input_cost_per_token: 0.000002
+      output_cost_per_token: 0.00001
       supports_tools: true
       supports_json_mode: true
 
@@ -225,6 +246,102 @@ model_list:
       params_b: 284
       context_k: 1000
       max_output_k: 1000
+      supports_tools: true
+      supports_json_mode: true
+
+  # --- WT-0e (2026-10-17): frontier models through the OpenRouter subscription, named plainly ("or-" prefix) because the older
+  # names above do not match what runs (gpt-4o is Gemini 3.1 Pro, claude-sonnet-5-5 is claude-3-5-sonnet). Additive: nothing above changed.
+  - model_name: or-grok-4.7
+    litellm_params:
+      model: openrouter/x-ai/grok-4.7
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+    model_info:
+      fox_tier: S
+      context_k: 500
+      max_output_k: 131
+      supports_tools: true
+      supports_json_mode: true
+
+  - model_name: or-claude-sonnet-5.5
+    litellm_params:
+      model: openrouter/anthropic/claude-sonnet-5.5
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+    model_info:
+      fox_tier: S
+      context_k: 1000
+      max_output_k: 64
+      supports_tools: true
+      supports_json_mode: true
+
+  - model_name: or-claude-opus-5.5
+    litellm_params:
+      model: openrouter/anthropic/claude-opus-5.5
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+    model_info:
+      fox_tier: S
+      context_k: 1000
+      max_output_k: 64
+      supports_tools: true
+      supports_json_mode: true
+
+  # --- effort variants (WT-0e): the effort is fixed by the model name, so every client (Grok CLI, wingman-ts) gets the same setting
+  - model_name: or-grok-4.7-high
+    litellm_params:
+      model: openrouter/x-ai/grok-4.7
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+      # OpenRouter's native reasoning control; LiteLLM drops the OpenAI-style reasoning_effort for openrouter (verified 2026-10-17)
+      extra_body:
+        reasoning:
+          effort: high
+    model_info:
+      fox_tier: S
+      context_k: 500
+      max_output_k: 131
+      supports_tools: true
+      supports_json_mode: true
+
+  - model_name: or-grok-4.7-xhigh
+    litellm_params:
+      model: openrouter/x-ai/grok-4.7
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+      # OpenRouter's native reasoning control; LiteLLM drops the OpenAI-style reasoning_effort for openrouter (verified 2026-10-17)
+      extra_body:
+        reasoning:
+          effort: xhigh
+    model_info:
+      fox_tier: S
+      context_k: 500
+      max_output_k: 131
+      supports_tools: true
+      supports_json_mode: true
+
+  - model_name: or-claude-sonnet-5.5-high
+    litellm_params:
+      model: openrouter/anthropic/claude-sonnet-5.5
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+      # OpenRouter's native reasoning control; LiteLLM drops the OpenAI-style reasoning_effort for openrouter (verified 2026-10-17)
+      extra_body:
+        reasoning:
+          effort: high
+    model_info:
+      fox_tier: S
+      context_k: 1000
+      max_output_k: 64
+      supports_tools: true
+      supports_json_mode: true
+
+  - model_name: or-claude-opus-5.5-high
+    litellm_params:
+      model: openrouter/anthropic/claude-opus-5.5
+      api_key: os.environ/OPEN_ROUTER_API_KEY
+      # OpenRouter's native reasoning control; LiteLLM drops the OpenAI-style reasoning_effort for openrouter (verified 2026-10-17)
+      extra_body:
+        reasoning:
+          effort: high
+    model_info:
+      fox_tier: S
+      context_k: 1000
+      max_output_k: 64
       supports_tools: true
       supports_json_mode: true
 
