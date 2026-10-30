@@ -1,18 +1,57 @@
+# Dedicated gateway for acp-artifact-fanout experiments — deliberately separate from the everyday proxy in
+# ~/workarea/fox/openai-proxy so that a 12-agent matrix run cannot rate-limit the IDEs, and so an experiment's
+# routing config stays pinned while the everyday one evolves.
+#
+# Differences from main: its own compose project (so its own network), host port 8001 instead of 8000, a Postgres
+# so LiteLLM writes spend logs with exact per-request tokens, and a healthcheck that works.
+# Use a SEPARATE OPEN_ROUTER_API_KEY in .env: OpenRouter meters credit per key, so sharing one would mix this
+# project's spend with everyday IDE usage and make the numbers unattributable.
+name: fanout-proxy
+
 services:
   llm-proxy:
     image: ghcr.io/berriai/litellm:main-stable
     ports:
-      - "8000:8000"
+      - "8001:8000"          # 8000 belongs to the everyday proxy
     env_file:
       - .env
+    environment:
+      # Spend logs land in Postgres: exact prompt/completion/cache tokens and cost per request.
+      # Prompt bodies are NOT stored (LiteLLM's default) — artifacts stay in the run folder, not in a database.
+      DATABASE_URL: postgresql://litellm:${POSTGRES_PASSWORD:-litellm}@db:5432/litellm
+      STORE_MODEL_IN_DB: "True"
     volumes:
       - ./litellm_config.yaml:/app/config.yaml:ro
       - ./agy_callbacks.py:/app/agy_callbacks.py:ro
     command: ["--config", "/app/config.yaml", "--port", "8000", "--host", "0.0.0.0"]
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:8000/health/liveliness"]
+      # The upstream healthcheck shells out to curl, which is not in this image, so it fails forever and the
+      # container is reported unhealthy while serving fine. Python is present.
+      test: ["CMD", "python", "-c",
+             "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health/liveliness', timeout=5).status==200 else 1)"]
       interval: 15s
-      timeout: 5s
+      timeout: 10s
       retries: 3
-      start_period: 20s
+      start_period: 40s
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: litellm
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-litellm}
+      POSTGRES_DB: litellm
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U litellm -d litellm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
