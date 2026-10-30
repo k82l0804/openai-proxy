@@ -368,6 +368,9 @@ general_settings:
 
 
 litellm_settings:
+  # agy support: relabels agy's tool-result turns so LiteLLM's Gemini adapter doesn't drop them (see agy_callbacks.py)
+  callbacks: agy_callbacks.proxy_handler_instance
+
   # Log level: DEBUG | INFO | WARNING | ERROR
   log_level: INFO
   drop_params: true
@@ -376,3 +379,9 @@ litellm_settings:
   success_callback: []
   failure_callback: []
 
+router_settings:
+  # agy support: agy (Antigravity CLI) can only request its own built-in Gemini model names (agy-proxy.sh uses its
+  # Gemini-API route, the only one that sends tool declarations). Route those names to the model we actually want to test.
+  model_group_alias:
+    gemini-3.8-flash: nemotron-3-ultra
+    gemini-3.1-flash-lite-preview: nemotron-3-ultra
