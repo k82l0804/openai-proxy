@@ -352,7 +352,7 @@ model_list:
 
 general_settings:
   # Set a master key to secure the proxy (clients pass this as the Bearer token).
-  # Leave as "local-dev" for local development — change for shared/staging use.
+  # Read from LITELLM_MASTER_KEY in .env (see .env.example).
   master_key: os.environ/LITELLM_MASTER_KEY
 
   # Drop unknown OpenAI parameters that upstream providers don't support, instead of erroring.

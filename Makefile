@@ -1,7 +1,21 @@
 .PHONY: up down logs health test
 
 PROXY_URL := http://localhost:8000
-MASTER_KEY := local-dev
+
+# The proxy key: LITELLM_MASTER_KEY from .env (only that line is read; .env also holds the upstream provider keys).
+# Falls back to local-dev, the key older setups used. Override with: make test MASTER_KEY=...
+ifndef MASTER_KEY
+MASTER_KEY := $(or $(shell sed -n 's/^LITELLM_MASTER_KEY=//p' .env 2>/dev/null | head -n1 | tr -d '"'),local-dev)
+endif
+
+# Container engine: Docker Compose v2 if available (also true with podman-docker), else podman compose, else the
+# standalone docker-compose. Override with: make up COMPOSE="podman compose"
+ifndef COMPOSE
+COMPOSE := $(shell \
+	if docker compose version >/dev/null 2>&1; then echo "docker compose"; \
+	elif podman compose version >/dev/null 2>&1; then echo "podman compose"; \
+	elif command -v docker-compose >/dev/null 2>&1; then echo "docker-compose"; fi)
+endif
 
 ## Start the proxy and wait until healthy (up to 60s)
 up:
@@ -10,7 +24,11 @@ up:
 		echo "   cp .env.example .env"; \
 		exit 1; \
 	fi
-	docker compose up -d
+	@if [ -z "$(COMPOSE)" ]; then \
+		echo "❌ No compose command found. Install Docker (with the Compose plugin) or Podman (with podman compose)."; \
+		exit 1; \
+	fi
+	$(COMPOSE) up -d
 	@echo "⏳ Waiting for proxy to be ready..."
 	@for i in $$(seq 1 12); do \
 		if curl -sf $(PROXY_URL)/health/liveliness > /dev/null 2>&1; then \
@@ -25,11 +43,11 @@ up:
 
 ## Stop the proxy
 down:
-	docker compose down
+	$(COMPOSE) down
 
 ## Tail proxy logs (Ctrl-C to exit)
 logs:
-	docker compose logs -f
+	$(COMPOSE) logs -f
 
 ## Check if the proxy is healthy (unauthenticated liveness endpoint)
 health:

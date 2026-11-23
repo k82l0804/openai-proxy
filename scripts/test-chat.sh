@@ -11,6 +11,8 @@
 set -euo pipefail
 
 PROXY_URL="${PROXY_URL:-http://localhost:8000}"
+# The proxy key: LITELLM_MASTER_KEY from ../.env (only that line; .env also holds the upstream provider keys)
+MASTER_KEY="${MASTER_KEY:-$(grep -m1 '^LITELLM_MASTER_KEY=' "$(dirname "$0")/../.env" 2>/dev/null | cut -d= -f2- | tr -d '"' || true)}"
 MASTER_KEY="${MASTER_KEY:-local-dev}"
 PROMPT="${PROMPT:-Say hi in exactly one sentence.}"
 MAX_TOKENS="${MAX_TOKENS:-128}"

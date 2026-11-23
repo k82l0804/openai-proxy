@@ -11,7 +11,9 @@ services:
     command: ["--config", "/app/config.yaml", "--port", "8000", "--host", "0.0.0.0"]
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:8000/health/liveliness"]
+      # python, not curl: the litellm image (Wolfi-based) has no curl. No spaces inside an argument: Podman's
+      # Docker-compatible API splits healthcheck arguments on spaces.
+      test: ["CMD", "python3", "-c", "__import__('urllib.request').request.urlopen('http://localhost:8000/health/liveliness',timeout=4)"]
       interval: 15s
       timeout: 5s
       retries: 3
