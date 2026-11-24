@@ -5,9 +5,10 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    # :z relabels the files for SELinux (enforcing on RHEL/OL/Fedora); a no-op where SELinux is off.
     volumes:
-      - ./litellm_config.yaml:/app/config.yaml:ro
-      - ./agy_callbacks.py:/app/agy_callbacks.py:ro
+      - ./litellm_config.yaml:/app/config.yaml:ro,z
+      - ./agy_callbacks.py:/app/agy_callbacks.py:ro,z
     command: ["--config", "/app/config.yaml", "--port", "8000", "--host", "0.0.0.0"]
     restart: unless-stopped
     healthcheck:

@@ -25,6 +25,8 @@ attach to its compose network, `openai-proxy_default`.
 - **Engine-agnostic.** It must work with Docker (Desktop or Engine) and with rootless Podman, on WSL 2 and on a normal
   Linux host. Use `$(COMPOSE)` in the Makefile, never a hardcoded `docker compose`. Image names are fully qualified
   (`ghcr.io/…`, `docker.io/…`).
+- **Bind mounts carry `:z`.** SELinux is enforcing on RHEL / Oracle Linux, and without it the container can't read
+  the mounted config (LiteLLM then fails with `Config file not found`). It's a no-op where SELinux is off.
 - **Healthcheck arguments contain no spaces.** Podman's Docker-compatible API splits `CMD` arguments on spaces. The
   image has no `curl`; the healthcheck uses `python3`.
 - When you add a model route, also add it to the config's header comment, and to `make test` if it's one of the

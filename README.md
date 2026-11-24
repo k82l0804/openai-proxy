@@ -119,6 +119,7 @@ See the [LiteLLM docs](https://docs.litellm.ai/docs/proxy/configs) for all optio
 | 401/400 from a model | Check the provider key that model uses (`OPEN_ROUTER_API_KEY`, `GEMINI_API_KEY` or `GROK_API_KEY`) in `.env` |
 | Podman: `permission denied while trying to connect to the docker API at unix:///var/run/docker.sock` (or `Cannot connect to the Docker daemon`) | `DOCKER_HOST` isn't set for Docker Compose. Use `make up COMPOSE="podman compose"`, or export `DOCKER_HOST=unix://$XDG_RUNTIME_DIR/podman/podman.sock` |
 | Port 8000 already in use | Change `8000:8000` to e.g. `8001:8000` in `docker-compose.yml` |
+| Never healthy; logs show `Config file not found: /app/config.yaml` | SELinux (enforcing on RHEL / Oracle Linux) is blocking the mounted config. The mounts in `docker-compose.yml` need `:z`, which this branch has; keep it on any mount you add. |
 
 ---
 
